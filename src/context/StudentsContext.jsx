@@ -1,4 +1,5 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useState, useEffect } from "react";
+
 import { getStudentsService } from "../services/students.getAll";
 import { getStudentByIdService } from "../services/students.getById";
 import { createStudentService } from "../services/students.create";
@@ -9,74 +10,80 @@ export const StudentsContext = createContext();
 
 export const StudentsProvider = ({ children }) => {
   const [students, setStudents] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const loadStudents = async () => {
     setLoading(true);
     setError("");
     try {
-      const list = await getStudentsService();
-      setStudents(list);
+      const { message, data } = await getStudentsService();
+      setStudents(data);
+      setMessage(message);
     } catch (err) {
-      setError(err.message || "Error loading students");
+      setError(err.message);
+      setMessage("");
     } finally {
       setLoading(false);
     }
   };
 
-  const addStudent = async (data) => {
+  const addStudent = async (payload) => {
+    setError("");
     try {
-      await createStudentService(data);
-      loadStudents();
-      return true;
+      const { message } = await createStudentService(payload);
+      await loadStudents();
+      return { ok: true, message };
     } catch (err) {
-      setError(err.message);
-      return false;
+      return { ok: false, error: err.message };
     }
   };
 
   const deleteStudent = async (id) => {
+    setError("");
     try {
-      await deleteStudentService(id);
-      loadStudents();
-      return true;
+      const { message } = await deleteStudentService(id);
+      await loadStudents();
+      return { ok: true, message };
     } catch (err) {
-      setError(err.message);
-      return false;
+      return { ok: false, error: err.message };
     }
   };
 
-  const updateStudent = async (id, data) => {
+  const updateStudent = async (id, payload) => {
+    setError("");
     try {
-      await updateStudentService(id, data);
-      loadStudents();
-      return true;
+      const { message } = await updateStudentService(id, payload);
+      await loadStudents();
+      return { ok: true, message };
     } catch (err) {
-      setError(err.message);
-      return false;
+      return { ok: false, error: err.message };
     }
   };
 
   const getStudentById = async (id) => {
+    setError("");
     try {
-      return await getStudentByIdService(id);
+      const { message, data } = await getStudentByIdService(id);
+      setMessage(message);
+      return data;
     } catch (err) {
       setError(err.message);
+      setMessage("");
       return null;
     }
   };
 
-  useEffect(() => {
-    loadStudents();
-  }, []);
+  useEffect(() => { loadStudents(); }, []);
 
   return (
     <StudentsContext.Provider
       value={{
         students,
-        loading,
+        message,
         error,
+        loading,
         setError,
         loadStudents,
         addStudent,
@@ -88,5 +95,4 @@ export const StudentsProvider = ({ children }) => {
       {children}
     </StudentsContext.Provider>
   );
-}
-
+};

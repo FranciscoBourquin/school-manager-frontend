@@ -1,16 +1,16 @@
 import { useState } from "react";
 import { Dialog, DialogTitle, DialogContent, DialogActions, Snackbar, Alert, Button as MUIButton } from "@mui/material";
-
 import { Button } from "../components/Button";
 import { StudentFormModal } from "../components/StudentFormModal";
-import { useStudents } from "../hooks/useStudents.js";
+import { useStudents } from "../hooks/useStudents";
 import { useNavigate } from "react-router-dom";
 
-export const Students= () => {
+export const Students = () => {
   const {
     students,
     loading,
     error,
+    message,
     addStudent,
     deleteStudent,
   } = useStudents();
@@ -28,13 +28,12 @@ export const Students= () => {
   });
 
   const handleAdd = async (payload) => {
-    const ok = await addStudent(payload);
-
-    if (ok) {
-      setSnack({ open: true, message: "Estudiante agregado", severity: "success" });
+    const result = await addStudent(payload);
+    if (result.ok) {
+      setSnack({ open: true, message: result.message, severity: "success" });
       setOpenAdd(false);
     } else {
-      setSnack({ open: true, message: error || "Error al agregar", severity: "error" });
+      setSnack({ open: true, message: result.error, severity: "error" });
     }
   };
 
@@ -44,19 +43,18 @@ export const Students= () => {
   };
 
   const confirmDelete = async () => {
-    const ok = await deleteStudent(selectedId);
+    const result = await deleteStudent(selectedId);
     setOpenConfirm(false);
 
-    if (ok) {
-      setSnack({ open: true, message: "Estudiante eliminado", severity: "success" });
+    if (result.ok) {
+      setSnack({ open: true, message: result.message, severity: "success" });
     } else {
-      setSnack({ open: true, message: error || "Error al eliminar", severity: "error" });
+      setSnack({ open: true, message: result.error, severity: "error" });
     }
   };
 
   return (
     <main className="flex flex-col gap-4 p-6">
-
       <div className="flex items-center justify-between max-w-3xl mx-auto w-full">
         <h1 className="text-2xl font-bold">Administrar Estudiantes</h1>
 
@@ -65,8 +63,10 @@ export const Students= () => {
         </Button>
       </div>
 
-      {loading && (
-        <p className="text-gray-500 text-center">Cargando...</p>
+      {loading && <p className="text-gray-500 text-center">Cargando...</p>}
+
+      {!loading && students.length === 0 && (
+        <p className="text-gray-600 text-center">{message}</p>
       )}
 
       {error && (
@@ -87,17 +87,11 @@ export const Students= () => {
             </div>
 
             <div className="flex gap-2">
-              <Button
-                variantType="details"
-                onClick={() => navigate(`/students/${s._id}`)}
-              >
+              <Button variantType="details" onClick={() => navigate(`/students/${s._id}`)}>
                 Detalles
               </Button>
 
-              <Button
-                variantType="delete"
-                onClick={() => askDelete(s._id)}
-              >
+              <Button variantType="delete" onClick={() => askDelete(s._id)}>
                 Eliminar
               </Button>
             </div>
@@ -122,22 +116,15 @@ export const Students= () => {
         </DialogActions>
       </Dialog>
 
-<Snackbar
-  open={snack.open}
-  autoHideDuration={3000}
-  onClose={() => setSnack({ ...snack, open: false })}
-  anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
-  sx={{
-    mb: 8,               
-    ml: 2,              
-  }}
->
-  <Alert severity={snack.severity} variant="filled">
-    {snack.message}
-  </Alert>
-</Snackbar>
-
-
+      <Snackbar
+        open={snack.open}
+        autoHideDuration={3000}
+        onClose={() => setSnack({ ...snack, open: false })}
+        anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
+        sx={{ ml: 2, mb: 8 }}
+      >
+        <Alert severity={snack.severity} variant="filled">{snack.message}</Alert>
+      </Snackbar>
     </main>
   );
-}
+};
