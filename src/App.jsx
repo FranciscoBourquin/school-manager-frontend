@@ -5,6 +5,7 @@ import { Home } from "./pages/Home";
 import { Students } from "./pages/Students";
 import { StudentDetails } from "./pages/StudentDetails";
 import { Courses } from "./pages/Courses";
+import { CourseDetails } from "./pages/CourseDetails";
 import "./App.css";
 
 export default function App() {
@@ -16,8 +17,9 @@ export default function App() {
           <Route path="/" element={<Home />} />
           <Route path="/students" element={<Students />} />
           <Route path="/students/:id" element={<StudentDetails />} />
-
           <Route path="/courses" element={<Courses />} />
+          <Route path="/courses/:id" element={<CourseDetails />} />
+
         </Routes>
 
         <Footer />
