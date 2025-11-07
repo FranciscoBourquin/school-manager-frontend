@@ -1,9 +1,9 @@
 import { createContext, useContext, useState, useEffect } from "react";
-import { getStudentsService } from "../services/students/students.getAll";
-import { getStudentByIdService } from "../services/students/students.getById";
-import { createStudentService } from "../services/students/students.create";
-import { deleteStudentService } from "../services/students/students.delete";
-import { updateStudentService } from "../services/students/students.update";
+import { getStudentsService } from "../services/students.getAll";
+import { getStudentByIdService } from "../services/students.getById";
+import { createStudentService } from "../services/students.create";
+import { deleteStudentService } from "../services/students.delete";
+import { updateStudentService } from "../services/students.update";
 
 export const StudentsContext = createContext();
 
