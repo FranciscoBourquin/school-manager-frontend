@@ -1,16 +1,178 @@
-# React + Vite
+SCHOOL MANAGER
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Descripción del Proyecto
+School Manager es una aplicación web pensada para administrar estudiantes y cursos. Permite crear, editar, eliminar y visualizar estudiantes, así como asignarlos o quitarlos de cursos específicos.
+La aplicación consume una API REST propia y se desarrolló en React utilizando Context, Hooks y servicios separados para cumplir con buenas prácticas y lineamientos de la consigna.
 
-Currently, two official plugins are available:
+Objetivos del Proyecto
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+Implementar un CRUD completo de estudiantes.
 
-## React Compiler
+Asignar y quitar estudiantes de diferentes cursos.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Consumir una API externa usando fetch.
 
-## Expanding the ESLint configuration
+Manejar estados globales con Context.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+Implementar un custom hook propio.
+
+Renderizado condicional y componentes reutilizables.
+
+Manejo de mensajes reales enviados por el backend.
+
+Diseño responsive utilizando Tailwind CSS.
+
+Confirmaciones de acciones y notificaciones mediante Material UI.
+
+Tecnologías Utilizadas
+
+React
+
+React Router DOM
+
+Context API
+
+JavaScript
+
+Custom Hooks
+
+Tailwind CSS
+
+Material UI
+
+Vite
+
+Node.js (Backend externo del TP)
+
+Requerimientos Previos
+
+Node.js v18 o superior
+
+Tener configurado el archivo .env con la URL de la API:
+
+VITE_API_URL=https://school-manager-orcin.vercel.app/api/students
+
+Instalación
+
+Clonar el repositorio:
+git clone https://github.com/FranciscoBourquin/school-manager-frontend
+
+Instalar dependencias:
+npm install
+
+Crear archivo .env con variable VITE_API_URL
+
+Ejecutar en modo desarrollo:
+npm run dev
+
+Estructura del Proyecto
+
+src/
+|
+├── assets/
+│ └── courses/
+|
+├── components/
+│ ├── Button.jsx
+│ ├── Header.jsx
+│ ├── Footer.jsx
+│ └── StudentFormModal.jsx
+|
+├── context/
+│ └── StudentsContext.jsx
+|
+├── hooks/
+│ └── useStudents.js
+|
+├── pages/
+│ ├── Home.jsx
+│ ├── Students.jsx
+│ ├── StudentDetails.jsx
+│ ├── Courses.jsx
+│ └── CourseDetails.jsx
+|
+└── services/
+├── students.getAll.js
+├── students.getById.js
+├── students.create.js
+├── students.update.js
+├── students.delete.js
+└── students.findByCourse.js
+
+Funcionamiento General
+
+Gestión de Estudiantes:
+
+Listado de todos los estudiantes.
+
+Creación mediante formulario dentro de un modal.
+
+Eliminación con confirmación.
+
+Detalles completos del estudiante.
+
+Redirección automática después de eliminar.
+
+Notificaciones de éxito o error.
+
+Gestión de Cursos:
+
+Vista de cursos representados por imágenes.
+
+Detalle de cada curso con estudiantes anotados y disponibles.
+
+Botón para agregar o quitar estudiantes del curso.
+
+Mensajes obtenidos directamente desde el backend.
+
+Mensajes del Backend
+Toda la aplicación muestra:
+
+Mensajes de éxito (creado, eliminado, actualizado).
+
+Mensajes de lista vacía.
+
+Mensajes de error.
+Todos provienen directamente del backend.
+
+Contexto Global
+La aplicación utiliza StudentsContext para almacenar:
+
+Lista de estudiantes
+
+Mensaje del backend
+
+Error del backend
+
+Estados de carga
+
+Funciones CRUD
+
+Custom Hook
+useStudents()
+Este hook facilita acceder al contexto global desde cualquier componente.
+
+Servicios
+Cada servicio realiza una llamada fetch separada:
+
+Obtener estudiantes
+
+Obtener por ID (detalles de estudiante)
+
+Crear
+
+Actualizar
+
+Eliminar
+
+Buscar por curso
+
+Todos retornan:
+{ message, data }
+
+Deploy
+El deploy se realizó utilizando Vercel mediante Vercel CLI. La carpeta generada por Vercel no se sube al repositorio.
+La aplicación está disponible en vercel: https://school-manager-frontend.vercel.app/
+
+Autor
+Francisco Bourquin
