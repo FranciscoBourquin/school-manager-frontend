@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Dialog, DialogTitle, DialogContent, DialogActions, Snackbar, Alert, Button as MUIButton } from "@mui/material";
 
-import { useStudents } from "../context/StudentsContext";
+import { useStudents } from "../hooks/useStudents.js";
 import { Button } from "../components/Button";
 import { StudentFormModal } from "../components/StudentFormModal";
 

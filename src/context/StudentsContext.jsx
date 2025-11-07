@@ -90,6 +90,3 @@ export const StudentsProvider = ({ children }) => {
   );
 }
 
-export const useStudents = () => {
-  return useContext(StudentsContext);
-}

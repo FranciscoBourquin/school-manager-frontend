@@ -3,7 +3,7 @@ import { Dialog, DialogTitle, DialogContent, DialogActions, Snackbar, Alert, But
 
 import { Button } from "../components/Button";
 import { StudentFormModal } from "../components/StudentFormModal";
-import { useStudents } from "../context/StudentsContext";
+import { useStudents } from "../hooks/useStudents.js";
 import { useNavigate } from "react-router-dom";
 
 export const Students= () => {
