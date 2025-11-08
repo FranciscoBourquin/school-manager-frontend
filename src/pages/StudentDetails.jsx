@@ -8,6 +8,7 @@ import {
   Snackbar,
   Alert,
   Button as MUIButton,
+  TextField,
 } from "@mui/material";
 
 import { Button } from "../components/Button";
@@ -17,12 +18,20 @@ export const StudentDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  const { getStudentById, deleteStudent } = useStudents();
+  const { getStudentById, deleteStudent, updateStudent } = useStudents();
 
   const [student, setStudent] = useState(null);
   const [loading, setLoading] = useState(true);
 
   const [openConfirm, setOpenConfirm] = useState(false);
+  const [openEdit, setOpenEdit] = useState(false);
+
+  const [editForm, setEditForm] = useState({
+    nombre: "",
+    apellido: "",
+    email: "",
+    cursos: "",
+  });
 
   const [snack, setSnack] = useState({
     open: false,
@@ -30,6 +39,7 @@ export const StudentDetails = () => {
     severity: "success",
   });
 
+  // ✅ SOLO depende de id (no del contexto)
   useEffect(() => {
     const load = async () => {
       setLoading(true);
@@ -38,22 +48,67 @@ export const StudentDetails = () => {
       setLoading(false);
     };
     load();
-  }, [id, getStudentById]);
+  }, [id]);
 
   const onDelete = async () => {
     setOpenConfirm(false);
-    const ok = await deleteStudent(id);
+
+    const result = await deleteStudent(id);
+
+    setSnack({
+      open: true,
+      message: result?.message || (result?.ok ? "Estudiante eliminado" : "Error al eliminar"),
+      severity: result?.ok ? "success" : "error",
+    });
+
+    if (result?.ok) {
+      setTimeout(() => navigate("/students"), 2500);
+    }
+  };
+
+  const openEditModal = () => {
+    if (!student) return;
+    setEditForm({
+      nombre: student.nombre || "",
+      apellido: student.apellido || "",
+      email: student.email || "",
+      cursos: Array.isArray(student.cursos)
+        ? student.cursos.join(", ")
+        : student.cursos || "",
+    });
+    setOpenEdit(true);
+  };
+
+  const handleEditChange = (e) => {
+    const { name, value } = e.target;
+    setEditForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const saveEdit = async () => {
+    const payload = {
+      nombre: editForm.nombre.trim(),
+      apellido: editForm.apellido.trim(),
+      email: editForm.email.trim(),
+      cursos: editForm.cursos
+        .split(",")
+        .map((c) => c.trim())
+        .filter(Boolean),
+    };
+
+    const ok = await updateStudent(id, payload);
+
     if (ok) {
       setSnack({
         open: true,
-        message: "Estudiante eliminado",
+        message: "Estudiante actualizado",
         severity: "success",
       });
-      setTimeout(() => navigate("/students"), 2200);
+      setStudent(payload);
+      setOpenEdit(false);
     } else {
       setSnack({
         open: true,
-        message: "Error al eliminar",
+        message: "Error al actualizar",
         severity: "error",
       });
     }
@@ -65,9 +120,7 @@ export const StudentDetails = () => {
 
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-2xl font-bold">
-              Detalles del Estudiante
-            </h1>
+            <h1 className="text-2xl font-bold">Detalles del Estudiante</h1>
             <span className="mt-1 inline-block rounded bg-gray-100 px-2 py-0.5 text-xs text-gray-700">
               ID: {id}
             </span>
@@ -77,7 +130,7 @@ export const StudentDetails = () => {
             <Button
               variantType="details"
               className="w-full sm:w-auto"
-              onClick={() => navigate(`/students/${id}/edit`)}
+              onClick={openEditModal}
             >
               Editar
             </Button>
@@ -106,16 +159,14 @@ export const StudentDetails = () => {
           {!loading && student && (
             <div className="space-y-2">
               <p>
-                <span className="font-semibold">Nombre:</span>{" "}
-                {student.nombre}
+                <span className="font-semibold">Nombre:</span> {student.nombre}
               </p>
               <p>
                 <span className="font-semibold">Apellido:</span>{" "}
                 {student.apellido}
               </p>
               <p>
-                <span className="font-semibold">Email:</span>{" "}
-                {student.email}
+                <span className="font-semibold">Email:</span> {student.email}
               </p>
               <div>
                 <span className="font-semibold">Cursos:</span>
@@ -132,13 +183,52 @@ export const StudentDetails = () => {
 
       <Dialog open={openConfirm} onClose={() => setOpenConfirm(false)}>
         <DialogTitle>Confirmar eliminación</DialogTitle>
-        <DialogContent>
-          ¿Seguro que querés eliminar este estudiante?
-        </DialogContent>
+        <DialogContent>¿Seguro que querés eliminar este estudiante?</DialogContent>
         <DialogActions>
           <MUIButton onClick={() => setOpenConfirm(false)}>Cancelar</MUIButton>
           <MUIButton color="error" variant="contained" onClick={onDelete}>
             Eliminar
+          </MUIButton>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog open={openEdit} onClose={() => setOpenEdit(false)} fullWidth maxWidth="sm">
+        <DialogTitle>Editar estudiante</DialogTitle>
+        <DialogContent sx={{ pt: 2, display: "grid", gap: 2 }}>
+          <TextField
+            label="Nombre"
+            name="nombre"
+            value={editForm.nombre}
+            onChange={handleEditChange}
+            fullWidth
+          />
+          <TextField
+            label="Apellido"
+            name="apellido"
+            value={editForm.apellido}
+            onChange={handleEditChange}
+            fullWidth
+          />
+          <TextField
+            label="Email"
+            name="email"
+            type="email"
+            value={editForm.email}
+            onChange={handleEditChange}
+            fullWidth
+          />
+          <TextField
+            label="Cursos (separados por coma)"
+            name="cursos"
+            value={editForm.cursos}
+            onChange={handleEditChange}
+            fullWidth
+          />
+        </DialogContent>
+        <DialogActions>
+          <MUIButton onClick={() => setOpenEdit(false)}>Cancelar</MUIButton>
+          <MUIButton variant="contained" onClick={saveEdit}>
+            Guardar cambios
           </MUIButton>
         </DialogActions>
       </Dialog>

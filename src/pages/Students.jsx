@@ -8,14 +8,13 @@ import {
   Alert,
   Button as MUIButton,
 } from "@mui/material";
-
 import { Button } from "../components/Button";
 import { StudentFormModal } from "../components/StudentFormModal";
-import { useStudents } from "../hooks/useStudents.js";
+import { useStudents } from "../hooks/useStudents";
 import { useNavigate } from "react-router-dom";
 
 export const Students = () => {
-  const { students, loading, error, addStudent, deleteStudent } = useStudents();
+  const { students, loading, error, message, addStudent, deleteStudent } = useStudents();
 
   const navigate = useNavigate();
 
@@ -30,21 +29,12 @@ export const Students = () => {
   });
 
   const handleAdd = async (payload) => {
-    const ok = await addStudent(payload);
-
-    if (ok) {
-      setSnack({
-        open: true,
-        message: "Estudiante agregado",
-        severity: "success",
-      });
+    const result = await addStudent(payload);
+    if (result.ok) {
+      setSnack({ open: true, message: result.message, severity: "success" });
       setOpenAdd(false);
     } else {
-      setSnack({
-        open: true,
-        message: error || "Error al agregar",
-        severity: "error",
-      });
+      setSnack({ open: true, message: result.error, severity: "error" });
     }
   };
 
@@ -54,43 +44,36 @@ export const Students = () => {
   };
 
   const confirmDelete = async () => {
-    const ok = await deleteStudent(selectedId);
+    const result = await deleteStudent(selectedId);
     setOpenConfirm(false);
 
-    if (ok) {
-      setSnack({
-        open: true,
-        message: "Estudiante eliminado",
-        severity: "success",
-      });
+    if (result.ok) {
+      setSnack({ open: true, message: result.message, severity: "success" });
     } else {
-      setSnack({
-        open: true,
-        message: error || "Error al eliminar",
-        severity: "error",
-      });
+      setSnack({ open: true, message: result.error, severity: "error" });
     }
   };
 
   return (
-    <main className="flex flex-col gap-4 p-4 sm:p-6">
+    <main className="p-4 sm:p-6 flex flex-col gap-4">
+      <div className="w-full max-w-3xl mx-auto flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <h1 className="text-xl sm:text-2xl font-bold">Administrar Estudiantes</h1>
 
-      <div className="mx-auto w-full max-w-3xl">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <h1 className="text-2xl font-bold">Administrar Estudiantes</h1>
-
+        <div className="w-full sm:w-auto">
           <Button
             variantType="add"
-            onClick={() => setOpenAdd(true)}
             className="w-full sm:w-auto"
+            onClick={() => setOpenAdd(true)}
           >
             Agregar estudiante
           </Button>
         </div>
       </div>
 
-      {loading && (
-        <p className="text-gray-500 text-center">Cargando...</p>
+      {loading && <p className="text-gray-500 text-center">Cargando...</p>}
+
+      {!loading && students.length === 0 && (
+        <p className="text-gray-600 text-center">{message}</p>
       )}
 
       {error && (
@@ -103,17 +86,18 @@ export const Students = () => {
         {students.map((s) => (
           <li
             key={s._id}
-            className="bg-gray-50 border p-3 rounded flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
+            className="bg-white border rounded p-3 sm:p-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
           >
-
-            <div className="min-w-0 flex-1">
-              <p className="font-medium truncate">
+            <div className="min-w-0">
+              <span className="block font-medium truncate">
                 {s.nombre} {s.apellido}
-              </p>
-              <p className="text-sm text-gray-600 truncate">{s.email}</p>
+              </span>
+              <span className="block text-sm text-gray-600 truncate">
+                {s.email}
+              </span>
             </div>
 
-            <div className="flex gap-2 w-full sm:w-auto sm:justify-end">
+            <div className="flex flex-col gap-2 sm:flex-row sm:gap-2 w-full sm:w-auto">
               <Button
                 variantType="details"
                 className="w-full sm:w-auto"
@@ -142,9 +126,7 @@ export const Students = () => {
 
       <Dialog open={openConfirm} onClose={() => setOpenConfirm(false)}>
         <DialogTitle>Confirmar eliminación</DialogTitle>
-        <DialogContent>
-          ¿Seguro que querés eliminar este estudiante?
-        </DialogContent>
+        <DialogContent>¿Seguro que querés eliminar este estudiante?</DialogContent>
         <DialogActions>
           <MUIButton onClick={() => setOpenConfirm(false)}>Cancelar</MUIButton>
           <MUIButton color="error" variant="contained" onClick={confirmDelete}>
@@ -158,7 +140,7 @@ export const Students = () => {
         autoHideDuration={3000}
         onClose={() => setSnack({ ...snack, open: false })}
         anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
-        sx={{ mb: 8, ml: 2 }}
+        sx={{ ml: 2, mb: 8 }}
       >
         <Alert severity={snack.severity} variant="filled">
           {snack.message}
