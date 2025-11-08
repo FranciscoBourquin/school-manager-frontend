@@ -1,19 +1,21 @@
 import { useState } from "react";
-import { Dialog, DialogTitle, DialogContent, DialogActions, Snackbar, Alert, Button as MUIButton } from "@mui/material";
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Snackbar,
+  Alert,
+  Button as MUIButton,
+} from "@mui/material";
+
 import { Button } from "../components/Button";
 import { StudentFormModal } from "../components/StudentFormModal";
-import { useStudents } from "../hooks/useStudents";
+import { useStudents } from "../hooks/useStudents.js";
 import { useNavigate } from "react-router-dom";
 
 export const Students = () => {
-  const {
-    students,
-    loading,
-    error,
-    message,
-    addStudent,
-    deleteStudent,
-  } = useStudents();
+  const { students, loading, error, addStudent, deleteStudent } = useStudents();
 
   const navigate = useNavigate();
 
@@ -28,12 +30,21 @@ export const Students = () => {
   });
 
   const handleAdd = async (payload) => {
-    const result = await addStudent(payload);
-    if (result.ok) {
-      setSnack({ open: true, message: result.message, severity: "success" });
+    const ok = await addStudent(payload);
+
+    if (ok) {
+      setSnack({
+        open: true,
+        message: "Estudiante agregado",
+        severity: "success",
+      });
       setOpenAdd(false);
     } else {
-      setSnack({ open: true, message: result.error, severity: "error" });
+      setSnack({
+        open: true,
+        message: error || "Error al agregar",
+        severity: "error",
+      });
     }
   };
 
@@ -43,30 +54,43 @@ export const Students = () => {
   };
 
   const confirmDelete = async () => {
-    const result = await deleteStudent(selectedId);
+    const ok = await deleteStudent(selectedId);
     setOpenConfirm(false);
 
-    if (result.ok) {
-      setSnack({ open: true, message: result.message, severity: "success" });
+    if (ok) {
+      setSnack({
+        open: true,
+        message: "Estudiante eliminado",
+        severity: "success",
+      });
     } else {
-      setSnack({ open: true, message: result.error, severity: "error" });
+      setSnack({
+        open: true,
+        message: error || "Error al eliminar",
+        severity: "error",
+      });
     }
   };
 
   return (
-    <main className="flex flex-col gap-4 p-6">
-      <div className="flex items-center justify-between max-w-3xl mx-auto w-full">
-        <h1 className="text-2xl font-bold">Administrar Estudiantes</h1>
+    <main className="flex flex-col gap-4 p-4 sm:p-6">
 
-        <Button variantType="add" onClick={() => setOpenAdd(true)}>
-          Agregar estudiante
-        </Button>
+      <div className="mx-auto w-full max-w-3xl">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <h1 className="text-2xl font-bold">Administrar Estudiantes</h1>
+
+          <Button
+            variantType="add"
+            onClick={() => setOpenAdd(true)}
+            className="w-full sm:w-auto"
+          >
+            Agregar estudiante
+          </Button>
+        </div>
       </div>
 
-      {loading && <p className="text-gray-500 text-center">Cargando...</p>}
-
-      {!loading && students.length === 0 && (
-        <p className="text-gray-600 text-center">{message}</p>
+      {loading && (
+        <p className="text-gray-500 text-center">Cargando...</p>
       )}
 
       {error && (
@@ -79,19 +103,30 @@ export const Students = () => {
         {students.map((s) => (
           <li
             key={s._id}
-            className="flex justify-between items-center bg-gray-50 border p-3 rounded"
+            className="bg-gray-50 border p-3 rounded flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
           >
-            <div className="flex flex-col">
-              <span className="font-medium">{s.nombre} {s.apellido}</span>
-              <span className="text-sm text-gray-600">{s.email}</span>
+
+            <div className="min-w-0 flex-1">
+              <p className="font-medium truncate">
+                {s.nombre} {s.apellido}
+              </p>
+              <p className="text-sm text-gray-600 truncate">{s.email}</p>
             </div>
 
-            <div className="flex gap-2">
-              <Button variantType="details" onClick={() => navigate(`/students/${s._id}`)}>
+            <div className="flex gap-2 w-full sm:w-auto sm:justify-end">
+              <Button
+                variantType="details"
+                className="w-full sm:w-auto"
+                onClick={() => navigate(`/students/${s._id}`)}
+              >
                 Detalles
               </Button>
 
-              <Button variantType="delete" onClick={() => askDelete(s._id)}>
+              <Button
+                variantType="delete"
+                className="w-full sm:w-auto"
+                onClick={() => askDelete(s._id)}
+              >
                 Eliminar
               </Button>
             </div>
@@ -107,7 +142,9 @@ export const Students = () => {
 
       <Dialog open={openConfirm} onClose={() => setOpenConfirm(false)}>
         <DialogTitle>Confirmar eliminación</DialogTitle>
-        <DialogContent>¿Seguro que querés eliminar este estudiante?</DialogContent>
+        <DialogContent>
+          ¿Seguro que querés eliminar este estudiante?
+        </DialogContent>
         <DialogActions>
           <MUIButton onClick={() => setOpenConfirm(false)}>Cancelar</MUIButton>
           <MUIButton color="error" variant="contained" onClick={confirmDelete}>
@@ -121,9 +158,11 @@ export const Students = () => {
         autoHideDuration={3000}
         onClose={() => setSnack({ ...snack, open: false })}
         anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
-        sx={{ ml: 2, mb: 8 }}
+        sx={{ mb: 8, ml: 2 }}
       >
-        <Alert severity={snack.severity} variant="filled">{snack.message}</Alert>
+        <Alert severity={snack.severity} variant="filled">
+          {snack.message}
+        </Alert>
       </Snackbar>
     </main>
   );

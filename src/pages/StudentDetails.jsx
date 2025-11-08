@@ -1,81 +1,143 @@
 import { useEffect, useState } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
-import { Snackbar, Alert, Dialog, DialogTitle, DialogContent, DialogActions, Button as MUIButton } from "@mui/material";
+import { useParams, useNavigate } from "react-router-dom";
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Snackbar,
+  Alert,
+  Button as MUIButton,
+} from "@mui/material";
+
+import { Button } from "../components/Button";
 import { useStudents } from "../hooks/useStudents";
 
 export const StudentDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  const { getStudentById, deleteStudent, error } = useStudents();
+  const { getStudentById, deleteStudent } = useStudents();
 
   const [student, setStudent] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  const [openConfirm, setOpenConfirm] = useState(false);
 
   const [snack, setSnack] = useState({
     open: false,
     message: "",
-    severity: "success"
+    severity: "success",
   });
 
-  const [openConfirm, setOpenConfirm] = useState(false);
-
-  const load = async () => {
-    const data = await getStudentById(id);
-    if (data) setStudent(data);
-  };
-
   useEffect(() => {
+    const load = async () => {
+      setLoading(true);
+      const data = await getStudentById(id);
+      setStudent(data);
+      setLoading(false);
+    };
     load();
-  }, [id]);
+  }, [id, getStudentById]);
 
-  const handleDelete = async () => {
-    const result = await deleteStudent(id);
+  const onDelete = async () => {
     setOpenConfirm(false);
-
-    if (result.ok) {
-      setSnack({ open: true, message: result.message, severity: "success" });
-      setTimeout(() => navigate("/students"), 4000);
+    const ok = await deleteStudent(id);
+    if (ok) {
+      setSnack({
+        open: true,
+        message: "Estudiante eliminado",
+        severity: "success",
+      });
+      setTimeout(() => navigate("/students"), 2200);
     } else {
-      setSnack({ open: true, message: result.error || error, severity: "error" });
+      setSnack({
+        open: true,
+        message: "Error al eliminar",
+        severity: "error",
+      });
     }
   };
 
-  if (!student) return <p className="p-6 text-center">Cargando...</p>;
-
   return (
-    <main className="max-w-3xl mx-auto p-6 flex flex-col gap-6">
+    <main className="p-4 sm:p-6">
+      <div className="mx-auto w-full max-w-3xl">
 
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Detalles del Estudiante con ID {id}</h1>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h1 className="text-2xl font-bold">
+              Detalles del Estudiante
+            </h1>
+            <span className="mt-1 inline-block rounded bg-gray-100 px-2 py-0.5 text-xs text-gray-700">
+              ID: {id}
+            </span>
+          </div>
 
-        <Link
-          to="/students"
-          className="bg-blue-600 text-white px-4 py-2 rounded shadow hover:bg-blue-700 transition"
-        >
-          VOLVER
-        </Link>
+          <div className="flex gap-2 w-full sm:w-auto">
+            <Button
+              variantType="details"
+              className="w-full sm:w-auto"
+              onClick={() => navigate(`/students/${id}/edit`)}
+            >
+              Editar
+            </Button>
+
+            <Button
+              variantType="delete"
+              className="w-full sm:w-auto"
+              onClick={() => setOpenConfirm(true)}
+            >
+              Eliminar
+            </Button>
+
+            <Button
+              variantType="secondary"
+              className="w-full sm:w-auto"
+              onClick={() => navigate(-1)}
+            >
+              Volver
+            </Button>
+          </div>
+        </div>
+
+        <section className="mt-4 rounded border bg-white p-4">
+          {loading && <p className="text-gray-500">Cargando...</p>}
+
+          {!loading && student && (
+            <div className="space-y-2">
+              <p>
+                <span className="font-semibold">Nombre:</span>{" "}
+                {student.nombre}
+              </p>
+              <p>
+                <span className="font-semibold">Apellido:</span>{" "}
+                {student.apellido}
+              </p>
+              <p>
+                <span className="font-semibold">Email:</span>{" "}
+                {student.email}
+              </p>
+              <div>
+                <span className="font-semibold">Cursos:</span>
+                <ul className="ml-5 list-disc">
+                  {(student.cursos || []).map((c) => (
+                    <li key={c}>{c}</li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          )}
+        </section>
       </div>
-
-      <div className="bg-gray-100 p-4 rounded shadow">
-        <p><strong>Nombre:</strong> {student.nombre}</p>
-        <p><strong>Apellido:</strong> {student.apellido}</p>
-        <p><strong>Email:</strong> {student.email}</p>
-        <p><strong>Cursos:</strong> {student.cursos?.join(", ") || "Ninguno"}</p>
-      </div>
-
-      <button
-        onClick={() => setOpenConfirm(true)}
-        className="bg-red-600 text-white px-4 py-2 rounded"
-      >
-        Eliminar
-      </button>
 
       <Dialog open={openConfirm} onClose={() => setOpenConfirm(false)}>
         <DialogTitle>Confirmar eliminación</DialogTitle>
-        <DialogContent>¿Seguro que querés eliminar este estudiante?</DialogContent>
+        <DialogContent>
+          ¿Seguro que querés eliminar este estudiante?
+        </DialogContent>
         <DialogActions>
           <MUIButton onClick={() => setOpenConfirm(false)}>Cancelar</MUIButton>
-          <MUIButton color="error" variant="contained" onClick={handleDelete}>
+          <MUIButton color="error" variant="contained" onClick={onDelete}>
             Eliminar
           </MUIButton>
         </DialogActions>
@@ -86,7 +148,7 @@ export const StudentDetails = () => {
         autoHideDuration={3000}
         onClose={() => setSnack({ ...snack, open: false })}
         anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
-        sx={{ ml: 2, mb: 8 }}
+        sx={{ mb: 8, ml: 2 }}
       >
         <Alert severity={snack.severity} variant="filled">
           {snack.message}
@@ -94,4 +156,4 @@ export const StudentDetails = () => {
       </Snackbar>
     </main>
   );
-}
+};
